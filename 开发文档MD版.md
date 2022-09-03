@@ -1,0 +1,269 @@
+
+
+# 基于Vue和SpringBoot大学生活动管理系统的分析和实现
+
+
+
+## 前端
+
+### 前台
+
+学生未认证功能（查看活动详情（收藏活动、取消收藏、分享活动）、查询活动、查看公告、查看个人中心(查看我收藏的活动功能、取消收藏))
+
+ 
+
+学生认证后功能（查看活动详情（报名活动、退出报名、收藏活动、取消收藏）、查询活动、查看公告、查看个人中心(查看我参加的活动、取消报名、发起活动申请、取消活动申请、查看我参加的活动、取消报名、查看我收藏的活动功能、取消收藏))
+
+ 
+
+前台（全体学生）、全体老师）
+
+ -首页
+
+ -活动列表（加入活动）
+
+-查询服务（通用查询、模糊查询）
+
+ -网站公告
+
+ -活动
+
+ -活动详情
+
+ -个人中心
+
+ -申请
+
+-打印申请表
+
+### 后台
+
+后台角色（活动负责人、部长、普通审核老师、主管老师（2级审核）、系统管理老师、系统基础管理员、超级管理员=基础管理员+开发者模式）
+
+后台管理系统
+
+**（部长、活动负责人）**
+
+- 首页
+  - 首页展示
+- 个人设置
+  - 个人信息
+  - 修改密码
+- 活动负责管理（活动负责人可以管理自己的活动、部长可以负责部门成员的活动）
+  - 管理我的活动
+  - 审核参加管理(线上确认)（管理我的活动成员）
+
+**（普通审核老师）**
+
+- 活动审核管理
+  - 审核申请活动
+  - 活动列表
+- 活动管理
+  - 活动列表
+  - 活动类型列表（确认活动的审核流程、1...3级审核）
+
+**（主管老师）**
+
+- 部门管理
+  - 部门类型管理
+  - 部门列表管理
+
+**（系统管理员、系统管理老师所拥有权限）** 
+
+- 前台功能管理
+
+  - 管理列表
+  - 注册管理
+  - 用户认证管理
+  - 首页管理
+  - 网站公告管理
+  - 资讯管理
+  - 论坛管理
+
+
+  - 留言板管理
+
+
+  - 个人中心管理
+  - 打印管理
+
+- 后台功能管理
+
+  - 管理列表
+    - 首页设置
+    - 快速注册管理
+    - 用户认证管理
+    - 快速审核管理
+    - 个人管理
+    - 活动管理
+    - 部门管理
+
+- 系统管理
+
+  - 用户管理
+  - 角色管理
+  - 菜单管理
+
+**（系统管理员所拥有权限）**
+
+- 推荐系统管理
+  - 推荐系统（管理采用XX算法eg 协同过滤）
+- 查询系统管理
+  - 查询系统（管理采用XX算法 eg NLP）
+- 系统基础配置平台
+  - 基础配置（学校名称、审核时长限制。。）
+- 分布式微服务管理平台
+  - 主机列表
+
+**（超级管理员）**
+
+- 数据字典
+  - 数据字典列表
+- 数据管理（开发者模式）
+  - xxx表
+  - xxx表
+
+## 后端
+
+
+
+## 数据库
+
+- 账号：root
+- 密码：111111
+
+### 数据库表设计
+
+- 在Mysql中取消外键约束:
+
+```sql
+SET FOREIGN_KEY_CHECKS=0;
+```
+
+- sys权限系统设计
+
+```mysql
+DROP TABLE IF EXISTS `sys_user`;
+-- 用户表
+CREATE TABLE `sys_user` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `username` varchar(64) DEFAULT NULL COMMENT '用户名',
+  `password` varchar(64) DEFAULT NULL COMMENT '密码',
+  `asso_id` bigint(20) DEFAULT NULL COMMENT '部门协会id',
+  `avatar` varchar(255) DEFAULT NULL COMMENT '头像',
+  `email` varchar(64) DEFAULT NULL COMMENT '邮箱',
+  `city` varchar(64) DEFAULT NULL COMMENT '城市',
+  `user_integral` bigint(10) DEFAULT 0 COMMENT '用户积分',
+  `user_autograph` varchar(255) DEFAULT NULL COMMENT '用户签名',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `last_login` datetime DEFAULT NULL COMMENT '最后登入',
+  `user_statu` int(5) NOT NULL COMMENT '（0无认证状态，1认证过，2审核状态，3禁用、4注销）',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `UK_USERNAME` (`username`) USING BTREE) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+	-- 角色表
+	DROP TABLE IF EXISTS `sys_role`;CREATE TABLE `sys_role` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `role_name` varchar(64) NOT NULL  COMMENT '角色名',
+  `role_code` varchar(64) NOT NULL COMMENT '角色编码',
+  `role_remark` varchar(64) DEFAULT NULL COMMENT '备注',
+  `create_time` datetime DEFAULT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `role_statu` int(5) NOT NULL COMMENT '角色状态（0禁用，1启用）',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `role_name` (`role_name`) USING BTREE,
+  UNIQUE KEY `role_code` (`role_code`) USING BTREE) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+	-- 用户_角色表
+	DROP TABLE IF EXISTS `sys_user_role`;
+	CREATE TABLE `sys_user_role` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `user_id` bigint(20) NOT NULL,
+  `role_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=15 DEFAULT CHARSET=utf8mb4;
+-- 菜单表
+	DROP TABLE IF EXISTS `sys_menu`;
+	CREATE TABLE `sys_menu` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `parent_id` bigint(20) DEFAULT NULL COMMENT '父菜单ID，一级菜单为0',
+  `menu_name` varchar(64) NOT NULL COMMENT '菜单名称',
+  `menu_path` varchar(255) DEFAULT NULL COMMENT '菜单URL',
+  `menu_perms` varchar(255) DEFAULT NULL COMMENT '授权(多个用逗号分隔，如：user:list,user:create)',
+  `menu_component` varchar(255) DEFAULT NULL COMMENT '组件路径',
+  `menu_type` int(5) NOT NULL COMMENT '类型     0：目录   1：菜单   2：按钮',
+  `menu_icon` varchar(32) DEFAULT NULL COMMENT '菜单图标',
+  `menu_orderNum` int(11) DEFAULT NULL COMMENT '排序',
+  `create_time` datetime NOT NULL COMMENT '创建时间',
+  `update_time` datetime DEFAULT NULL COMMENT '更新时间',
+  `menu_statu` int(5) NOT NULL DEFAULT 1 COMMENT '菜单状态（0禁用，1启用）',
+  PRIMARY KEY (`id`),
+  UNIQUE KEY `menu_name` (`menu_name`) USING BTREE) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8;
+	-- 角色_菜单表
+	DROP TABLE IF EXISTS `sys_role_menu`;
+	CREATE TABLE `sys_role_menu` (
+  `id` bigint(20) NOT NULL AUTO_INCREMENT,
+  `role_id` bigint(20) NOT NULL,
+  `menu_id` bigint(20) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+```
+
+
+
+- core核心业务数据库表
+
+
+
+- expansion拓展业务数据库表
+
+
+
+- top顶级业务数据库表
+
+
+
+### 数据库调优
+
+
+
+# 接口
+
+后端接口基础地址：http://localhost:8888
+
+## 后端接口
+
+- 活动模块  模块地址  ：     /Act
+
+| 接口名  | 接口地址 | 参数   | 备注   |
+| ---- | ---- | ---- | ---- |
+|      |      |      |      |
+
+- 个人中心模块	 模块地址 ： /Person
+
+| 接口名  | 接口地址 | 参数   | 备注   |
+| ---- | ---- | ---- | ---- |
+|      |      |      |      |
+
+- 其他模块.......			
+
+| 接口名  | 接口地址 | 参数   | 备注   |
+| ---- | ---- | ---- | ---- |
+|      |      |      |      |
+
+
+
+# 参考资料
+
+##　前端资料
+
+| 资料名  | 作者   | 平台   | 链接   |
+| ---- | ---- | ---- | ---- |
+|      |      |      |      |
+
+## 后端资料
+
+| name | author | stage | url  |
+| ---- | ------ | ----- | ---- |
+|      |        |       |      |
+
+
+
